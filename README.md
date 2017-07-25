@@ -31,6 +31,10 @@ Fetching hw addr cmd
 ```
 route -n
 ```
+Fetching my default gateway cmd
+```
+/bin/bash -c 'route -n' | grep G | grep eth0 | awk '{print $2}'
+```
 
 ## Implements of net-tools
 
