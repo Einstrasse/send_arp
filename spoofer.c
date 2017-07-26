@@ -2,20 +2,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <netinet/if_ether.h>
 #include "infofetcher.h"
 
 #define CMD_BUF_SIZE 256
 #define IP_ADDR_BUF_SIZE 20
 #define MAC_ADDR_BUF_SIZE 25
 #define GATE_ADDR_BUF_SIZE 20
+#define PACK_BUF_SIZE 1024 * 64
+#define PCAP_ERR_BUF_SIZE 1024
 
 int main(int argc, char* argv[]) {
-	FILE* fp;
+	pcap_t *handle;
 	char opt_verbose = 0;
-	char cmdbuf[CMD_BUF_SIZE];
+	char errbuf[PCAP_ERR_BUF_SIZE];
 	char my_ip_addr_str[IP_ADDR_BUF_SIZE];
 	char my_mac_addr_str[MAC_ADDR_BUF_SIZE];
-	char my_defgw_addr_str[GATE_ADDR_BUF_SIZE]; //default gateway str
 	char *ifname = NULL; //interface name
 	char *victim_ip_addr_str = NULL; //victim ip address string
 	char *target_ip_addr_str = NULL;
@@ -52,18 +54,31 @@ int main(int argc, char* argv[]) {
 		perror("Fail to fetch IPv4 address\n");
 	 	exit(EXIT_FAILURE);
 	}
-	printf("My IPv4 addr: %s\n", my_ip_addr_str);
+	if (opt_verbose) {
+		printf("My IPv4 addr: %s\n", my_ip_addr_str);
+	}
 
 	if (get_my_ip_str(ifname, my_mac_addr_str, sizeof(my_mac_addr_str) - 1) == EXIT_FAILURE) {
 		perror("Fail to fetch Mac address\n");
 		exit(EXIT_FAILURE);
 	}
-	printf("My Mac addr: %s\n", my_mac_addr_str);
-
-	if (get_my_gateway_str(ifname, my_defgw_addr_str, sizeof(my_defgw_addr_str) - 1) == EXIT_FAILURE) {
-		perror("Fail to fetch default gateway\n");
-		exit(EXIT_FAILURE);
+	if (opt_verbose) {
+		printf("My Mac addr: %s\n", my_mac_addr_str);
 	}
-	printf("My default Gateway addr: %s\n", my_defgw_addr_str);
+
+	handle = pcap_open_live(ifname, PACK_BUF_SIZE, 0, 1000, errbuf);
+	if (handle == NULL) {
+		fprintf(stderr, "Cannot open device %s: %s\n", ifname, errbuf);
+		exit(EXIT_FAILURE);
+	}	
+	if (opt_verbose) {
+		printf("Open device [%s]\n", ifname);
+	}
+
+	// if (get_my_gateway_str(ifname, my_defgw_addr_str, sizeof(my_defgw_addr_str) - 1) == EXIT_FAILURE) {
+	// 	perror("Fail to fetch default gateway\n");
+	// 	exit(EXIT_FAILURE);
+	// }
+	// printf("My default Gateway addr: %s\n", my_defgw_addr_str);
 
 }
