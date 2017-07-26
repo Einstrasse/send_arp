@@ -5,7 +5,7 @@ Security Consulting Track
 Jung Hangil
 
 ## Compile enviroment
-1. Debian Linuxs (Kali / Ubuntu)
+1. Kali Linux
 2. gcc
 3. pcap library
 
@@ -13,6 +13,9 @@ Jung Hangil
 ```
 make
 ```
+
+## Execution environment
+Kali Linux
 
 ## Fetching My IP / MAC addr
 ```
