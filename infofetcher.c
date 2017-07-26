@@ -72,7 +72,6 @@ int send_arp_packet(pcap_t *handle, char* src_mac, char* dst_mac, char* src_ip, 
 	arp_hdr->ea_hdr.ar_pro = ntohs(ETHERTYPE_IP);
 	arp_hdr->ea_hdr.ar_hln = 6;
 	arp_hdr->ea_hdr.ar_pln = 4;
-	//arp_hdr->ea_hdr.ar_op = ntohs(ARPOP_REQUEST);
 	arp_hdr->ea_hdr.ar_op = ntohs(type);
 
 	sscanf(src_mac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &arp_hdr->arp_sha[0], &arp_hdr->arp_sha[1], &arp_hdr->arp_sha[2], &arp_hdr->arp_sha[3], &arp_hdr->arp_sha[4], &arp_hdr->arp_sha[5]);
@@ -84,19 +83,9 @@ int send_arp_packet(pcap_t *handle, char* src_mac, char* dst_mac, char* src_ip, 
 	}
 	sscanf(dst_ip, "%hhd.%hhd.%hhd.%hhd", &arp_hdr->arp_tpa[0], &arp_hdr->arp_tpa[1], &arp_hdr->arp_tpa[2], &arp_hdr->arp_tpa[3]);
 
-	// if (opt_verbose) {
-	// 	int len = sizeof(struct ether_header) + sizeof(struct ether_arp);
-	// 	for (int i=0; i < len; i++) {
-	// 		printf("%02X ", send_buf[i]);
-	// 		if (i % 16 == 15) putchar('\n');
-	// 		else if (i % 8 == 7) putchar(' ');
-	// 	}
-	// 	putchar('\n');
-	// }
 	int pack_len = sizeof(struct ether_header) + sizeof(struct ether_arp);
 	if (pcap_sendpacket(handle, send_buf, pack_len) == -1) {
 		fprintf(stderr, "pcap_sendpacket err %s\n", pcap_geterr(handle));
-		//exit(EXIT_FAILURE);
 		return EXIT_FAILURE;
 	} else {
 		return EXIT_SUCCESS;
