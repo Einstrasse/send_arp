@@ -124,5 +124,10 @@ int main(int argc, char* argv[]) {
 		}
 		putchar('\n');
 	}
+	int pack_len = sizeof(struct ether_header) + sizeof(struct ether_arp);
+	if (pcap_sendpacket(handle, send_buf, pack_len) == -1) {
+		fprintf(stderr, "pcap_sendpacket err %s\n", pcap_geterr(handle));
+		exit(EXIT_FAILURE);
+	}
 
 }
