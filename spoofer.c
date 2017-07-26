@@ -17,6 +17,8 @@
 int main(int argc, char* argv[]) {
 	pcap_t *handle;
 	char opt_verbose = 0;
+	struct pcap_pkthdr* header_ptr;
+	const u_char *pkt_data;
 	struct ether_header* eth_hdr;
 	struct ether_arp* arp_hdr;
 	u_char send_buf[SEND_BUF_SIZE];
@@ -26,6 +28,7 @@ int main(int argc, char* argv[]) {
 	char *ifname = NULL; //interface name
 	char *victim_ip_addr_str = NULL; //victim ip address string
 	char *target_ip_addr_str = NULL;
+	u_char victim_mac_addr[6];
 	if (argc < 4) {
 		fprintf(stderr, "Usage: %s [-options] [Interface name] [victim IP] [target IP]\n", argv[0]);
 		fprintf(stderr, "\t[options]\n\t\t-v : verbose mode\n");
@@ -104,11 +107,11 @@ int main(int argc, char* argv[]) {
 		printf("%02X\n",*tmp);
 	}
 	arp_hdr = (struct ether_arp*)(send_buf + sizeof(struct ether_header));
-	arp_hdr->ea_hdr.ar_hrd = ntohs(0x0001);
-	arp_hdr->ea_hdr.ar_pro = ntohs(0x0800);
+	arp_hdr->ea_hdr.ar_hrd = ntohs(ARPHRD_ETHER);
+	arp_hdr->ea_hdr.ar_pro = ntohs(ETHERTYPE_IP);
 	arp_hdr->ea_hdr.ar_hln = 6;
 	arp_hdr->ea_hdr.ar_pln = 4;
-	arp_hdr->ea_hdr.ar_op = ntohs(0x0001);
+	arp_hdr->ea_hdr.ar_op = ntohs(ARPOP_REQUEST);
 
 	sscanf(my_mac_addr_str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &arp_hdr->arp_sha[0], &arp_hdr->arp_sha[1], &arp_hdr->arp_sha[2], &arp_hdr->arp_sha[3], &arp_hdr->arp_sha[4], &arp_hdr->arp_sha[5]);
 	sscanf(my_ip_addr_str, "%hhd.%hhd.%hhd.%hhd", &arp_hdr->arp_spa[0], &arp_hdr->arp_spa[1], &arp_hdr->arp_spa[2], &arp_hdr->arp_spa[3]);
@@ -128,6 +131,48 @@ int main(int argc, char* argv[]) {
 	if (pcap_sendpacket(handle, send_buf, pack_len) == -1) {
 		fprintf(stderr, "pcap_sendpacket err %s\n", pcap_geterr(handle));
 		exit(EXIT_FAILURE);
+	}
+
+	while(1) {
+		int status = pcap_next_ex(handle, &header_ptr, &pkt_data);
+		if (status == 0) {
+			printf("no packet\n");
+			continue;
+		} else if (status == -1) {
+			 fprintf(stderr, "Failed to set buffer size on capture handle : %s\n",
+                        pcap_geterr(handle));
+			break;
+		} else if (status == -2) {
+			fprintf(stderr, "Finished reading packet data from packet files\n");
+			break;
+		}
+		eth_hdr = (struct ether_header*)pkt_data;
+		if (ntohs(eth_hdr->ether_type) == ETHERTYPE_ARP) {
+			arp_hdr = (struct ether_arp*)(pkt_data + sizeof(struct ether_header));
+		} else {
+			//not arp proto
+			continue;
+		}
+		if (ntohs(arp_hdr->ea_hdr.ar_pro) != ETHERTYPE_IP) {
+			//not IPv4 ARP
+			continue;
+		}
+		if (ntohs(arp_hdr->ea_hdr.ar_op) != ARPOP_REPLY) {
+			//not ARP reply
+			continue;
+		}
+		for (int i=0; i < 6; i++) {
+			victim_mac_addr[i] = arp_hdr->arp_sha[i];
+		}
+		break;
+	}
+	if (opt_verbose) {
+		printf("Victim Mac addr - ");
+		for (int i=0; i < 6; i++) {
+			printf("%02X", victim_mac_addr[i]);
+			if (i < 5) putchar(':');
+		}
+		putchar('\n');
 	}
 
 }
