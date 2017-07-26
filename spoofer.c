@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "infofetcher.h"
 
 #define CMD_BUF_SIZE 256
 #define IP_ADDR_BUF_SIZE 20
 #define MAC_ADDR_BUF_SIZE 25
 #define GATE_ADDR_BUF_SIZE 20
+
 int main(int argc, char* argv[]) {
 	FILE* fp;
 	char opt_verbose = 0;
@@ -16,7 +18,8 @@ int main(int argc, char* argv[]) {
 	char my_defgw_addr_str[GATE_ADDR_BUF_SIZE]; //default gateway str
 	char *ifname = NULL; //interface name
 	char *victim_ip_addr_str = NULL; //victim ip address string
-	if (argc < 3) {
+	char *target_ip_addr_str = NULL;
+	if (argc < 4) {
 		fprintf(stderr, "Usage: %s [-options] [Interface name] [victim IP] [target IP]\n", argv[0]);
 		fprintf(stderr, "\t[options]\n\t\t-v : verbose mode\n");
 		return EXIT_FAILURE;
@@ -31,27 +34,34 @@ int main(int argc, char* argv[]) {
 		} else {
 			if (ifname == NULL) {
 				ifname = argv[cnt];
-			} else {
+			} else if (victim_ip_addr_str == NULL) {
 				victim_ip_addr_str = argv[cnt];
+			} else {
+				target_ip_addr_str = argv[cnt];
 			}
 		}
 	}
 
-	ifname = argv[1];
 	if (opt_verbose) {
 		printf("ifname: %s\n", ifname);
-		printf("victim ip addr: %s\n", victim_ip_addr_str);
+		printf("victim_ip_addr_str: %s\n", victim_ip_addr_str);
+		printf("target_ip_addr_str: %s\n", target_ip_addr_str);
 	}
-	sprintf(cmdbuf, "/bin/bash -c \"ifconfig %s\" | grep \"inet \" | awk '{print $2}'\n", ifname);
-	if (opt_verbose) 
-	printf("cmdbuf: %s\n", cmdbuf);
-	fp = popen(cmdbuf, "r");
-	if (fp == NULL) {
+	////////
+	// sprintf(cmdbuf, "/bin/bash -c \"ifconfig %s\" | grep \"inet \" | awk '{print $2}'\n", ifname);
+	// if (opt_verbose) 
+	// printf("cmdbuf: %s\n", cmdbuf);
+	// fp = popen(cmdbuf, "r");
+	// if (fp == NULL) {
+	// 	perror("Fail to fetch IPv4 address\n");
+	// 	exit(EXIT_FAILURE);
+	// }
+	// fgets(my_ip_addr_str, sizeof(my_ip_addr_str) - 1, fp);
+	// pclose(fp);
+	if (get_my_mac_str(ifname, my_ip_addr_str, sizeof(my_ip_addr_str) - 1) == EXIT_FAILURE) {
 		perror("Fail to fetch IPv4 address\n");
-		exit(EXIT_FAILURE);
+	 	exit(EXIT_FAILURE);
 	}
-	fgets(my_ip_addr_str, sizeof(my_ip_addr_str) - 1, fp);
-	pclose(fp);
 	printf("My IPv4 addr: %s\n", my_ip_addr_str);
 
 	sprintf(cmdbuf, "/bin/bash -c \"ifconfig %s\" | grep '[ ][0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]' | awk '{print $2}'", ifname);
