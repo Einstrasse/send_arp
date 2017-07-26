@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
 	char *ifname = NULL; //interface name
 	char *victim_ip_addr_str = NULL; //victim ip address string
 	if (argc < 3) {
-		fprintf(stderr, "Usage: %s [-options] [Interface name] [Victim IPv4 addr]\n", argv[0]);
+		fprintf(stderr, "Usage: %s [-options] [Interface name] [victim IP] [target IP]\n", argv[0]);
 		fprintf(stderr, "\t[options]\n\t\t-v : verbose mode\n");
 		return EXIT_FAILURE;
 	}
