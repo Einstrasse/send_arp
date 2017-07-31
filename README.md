@@ -21,8 +21,13 @@ Kali Linux
 ```
 $ spoofer [-options] [Interface name] [sender IP] [target IP]
 ```
-Option is only -v is available.
--v option -> verbose mode. Print debug messages.
+Option is only -v is available.    
+-v option -> verbose mode. Print debug messages.    
+Example usage command
+```
+$ ./spoofer eth0 192.168.32.64 192.168.32.254
+```
+
 ## Fetching My IP / MAC addr
 ```
 ifconfig
