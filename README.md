@@ -17,6 +17,12 @@ make
 ## Execution environment
 Kali Linux
 
+## Usage
+```
+$ spoofer [-options] [Interface name] [sender IP] [target IP]
+```
+Option is only -v is available.
+-v option -> verbose mode. Print debug messages.
 ## Fetching My IP / MAC addr
 ```
 ifconfig
