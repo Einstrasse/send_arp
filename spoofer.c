@@ -59,7 +59,8 @@ int main(int argc, char* argv[]) {
 		printf("target_ip_addr_str: %s\n", target_ip_addr_str);
 	}
 
-	if (get_my_mac_str(ifname, my_ip_addr_str, sizeof(my_ip_addr_str) - 1) == EXIT_FAILURE) {
+	// if (get_my_mac_str(ifname, my_ip_addr_str, sizeof(my_ip_addr_str) - 1) == EXIT_FAILURE) {
+	if (get_my_ip_str(ifname, my_ip_addr_str, sizeof(my_ip_addr_str) - 1) == EXIT_FAILURE) {
 		perror("Fail to fetch IPv4 address\n");
 	 	exit(EXIT_FAILURE);
 	}
@@ -67,7 +68,8 @@ int main(int argc, char* argv[]) {
 		printf("My IPv4 addr: %s\n", my_ip_addr_str);
 	}
 
-	if (get_my_ip_str(ifname, my_mac_addr_str, sizeof(my_mac_addr_str) - 1) == EXIT_FAILURE) {
+	// if (get_my_ip_str(ifname, my_mac_addr_str, sizeof(my_mac_addr_str) - 1) == EXIT_FAILURE) {
+	if (get_my_mac_str(ifname, my_mac_addr_str, sizeof(my_mac_addr_str) - 1) == EXIT_FAILURE) {
 		perror("Fail to fetch Mac address\n");
 		exit(EXIT_FAILURE);
 	}

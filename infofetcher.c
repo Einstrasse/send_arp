@@ -10,7 +10,8 @@
 #include <arpa/inet.h>
 
 #define CMD_BUF_SIZE 256
-int get_my_mac_str(char *ifname, char *str, int len) {
+// int get_my_mac_str(char *ifname, char *str, int len) {
+int get_my_ip_str(char *ifname, char *str, int len) {
 	FILE* fp;
 	char cmdbuf[CMD_BUF_SIZE];
 	sprintf(cmdbuf, "/bin/bash -c \"ifconfig %s\" | grep \"inet \" | awk '{print $2}'\n", ifname);
@@ -23,7 +24,8 @@ int get_my_mac_str(char *ifname, char *str, int len) {
 	pclose(fp);
 	return EXIT_SUCCESS;
 }
-int get_my_ip_str(char *ifname, char *str, int len) {
+// int get_my_ip_str(char *ifname, char *str, int len) {
+int get_my_mac_str(char *ifname, char *str, int len) {
 	FILE* fp;
 	char cmdbuf[CMD_BUF_SIZE];
 	sprintf(cmdbuf, "/bin/bash -c \"ifconfig %s\" | grep '[ ][0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]:[0-9a-zA-Z][0-9a-zA-Z]' | awk '{print $2}'", ifname);
